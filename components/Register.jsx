@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 
 // Helper functions to validate inputs
@@ -9,7 +9,7 @@ const validateEmail = (email) => {
 };
 
 const validatePhoneNumber = (phoneNumber) => {
-  const phoneRegex = /^\d{10,15}$/;
+  const phoneRegex = /^\d{10,15}$/; 
   return phoneRegex.test(phoneNumber);
 };
 
@@ -58,11 +58,9 @@ const Step1 = ({ formData, setFormData }) => (
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         />
       </div>
-
+      
       <div>
-        <label className="mb-1 font-semibold text-gray-700">
-          Affiliate Username
-        </label>
+        <label className="mb-1 font-semibold text-gray-700">Affiliate Username</label>
         <input
           type="text"
           className="input input-bordered w-full"
@@ -88,9 +86,7 @@ const Step1 = ({ formData, setFormData }) => (
       </div>
 
       <div>
-        <label className="mb-1 font-semibold text-gray-700">
-          Affiliate Referral ID
-        </label>
+        <label className="mb-1 font-semibold text-gray-700">Affiliate Referral ID</label>
         <input
           type="text"
           className="input input-bordered w-full"
@@ -117,11 +113,9 @@ const Step2 = ({ formData, setFormData }) => (
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
     </div>
-
+    
     <div>
-      <label className="mb-1 font-semibold text-gray-700">
-        Confirm Password
-      </label>
+      <label className="mb-1 font-semibold text-gray-700">Confirm Password</label>
       <input
         type="password"
         className="input input-bordered w-full"
@@ -137,9 +131,7 @@ const Step2 = ({ formData, setFormData }) => (
 
 const Step3 = ({ formData, setFormData }) => (
   <div>
-    <label className="mb-1 font-semibold text-gray-700">
-      6-Digit Verification
-    </label>
+    <label className="mb-1 font-semibold text-gray-700">6-Digit Verification</label>
     <input
       type="text"
       className="input input-bordered w-full"
@@ -150,10 +142,6 @@ const Step3 = ({ formData, setFormData }) => (
         setFormData({ ...formData, verificationCode: e.target.value })
       }
     />
-    <div className="text-red-500 mt-2">
-      The verification code you entered is incorrect. Please check the code and
-      try again.
-    </div>
   </div>
 );
 
@@ -161,6 +149,9 @@ const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -169,12 +160,10 @@ const Register = () => {
     lastName: "",
     email: "",
     referralId: "",
-    verificationCode: "",
+    verificationCode: ""
   });
 
-  // Fake token for example; replace with actual token fetching logic
-  const token =
-    "a1c3153183a8a6c519ef4308aed1a14df597161bbfe83a555ff9181c2389df48";
+  const token = "a1c3153183a8a6c519ef4308aed1a14df597161bbfe83a555ff9181c2389df48"; // Fake token for example; replace with actual token fetching logic
 
   // Validation Function
   const validateStep = () => {
@@ -187,42 +176,39 @@ const Register = () => {
         !formData.phoneNumber ||
         !formData.referralId
       ) {
-        alert("Please fill in all fields.");
+        setErrorMessage("Please fill in all fields.");
         return false;
       }
       if (!validateEmail(formData.email)) {
-        alert("Please enter a valid email.");
+        setErrorMessage("Please enter a valid email.");
         return false;
       }
       if (!validatePhoneNumber(formData.phoneNumber)) {
-        alert("Please enter a valid phone number.");
+        setErrorMessage("Please enter a valid phone number.");
         return false;
       }
     } else if (currentStep === 2) {
       if (!formData.password || !formData.confirmPassword) {
-        alert("Please fill in all fields.");
+        setErrorMessage("Please fill in all fields.");
         return false;
       }
       if (!validatePassword(formData.password)) {
-        alert(
+        setErrorMessage(
           "Password must be at least 8 characters long, contain one uppercase, one lowercase, one number, and one special character."
         );
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
-        alert("Passwords do not match.");
+        setErrorMessage("Passwords do not match.");
         return false;
       }
     } else if (currentStep === 3) {
       if (!formData.verificationCode) {
-        alert("Please enter the verification code.");
+        setErrorMessage("Please enter the verification code.");
         return false;
       }
-      if (
-        formData.verificationCode.length !== 6 ||
-        isNaN(formData.verificationCode)
-      ) {
-        alert("Please enter a valid 6-digit verification code.");
+      if (formData.verificationCode.length !== 6 || isNaN(formData.verificationCode)) {
+        setErrorMessage("Please enter a valid 6-digit verification code.");
         return false;
       }
     }
@@ -235,6 +221,8 @@ const Register = () => {
 
     try {
       setLoading(true);
+      setErrorMessage(null); // Clear any previous errors
+      setSuccessMessage(null); // Clear any previous success messages
 
       const fullName = `${formData.firstName} ${formData.lastName}`;
       const payload = {
@@ -244,7 +232,7 @@ const Register = () => {
         fullname: fullName,
         email: formData.email,
         referal_id: formData.referralId,
-        token: token, // Include the token
+        token: token,  // Include the token
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Detect timezone
       };
 
@@ -266,8 +254,10 @@ const Register = () => {
 
       // Set the email sent state to true and move to step 3
       setIsEmailSent(true);
+      setSuccessMessage("Account created successfully!");
       setCurrentStep(3);
     } catch (error) {
+      setErrorMessage("Sign Up failed. Please try again.");
       console.error("Sign Up Error", error);
     } finally {
       setLoading(false);
@@ -276,8 +266,7 @@ const Register = () => {
 
   const nextStep = () => {
     if (currentStep === 2) {
-      // Call the signup function if on step 2
-      signUp();
+      signUp(); // Call the signup function if on step 2
     } else if (validateStep()) {
       setCurrentStep(currentStep + 1);
     }
@@ -286,59 +275,22 @@ const Register = () => {
   return (
     <div className="max-w-lg mx-auto mt-16 bg-white shadow-md rounded-lg p-8">
       <div className="flex justify-center mb-6">
-        <div
-          className={`rounded-full w-12 h-12 flex items-center justify-center text-white ${
-            currentStep >= 1 ? "bg-blue-600" : "bg-gray-400"
-          }`}
-        >
-          01
-        </div>
-        <div
-          className={`w-16 h-px bg-${
-            currentStep >= 2 ? "blue-600" : "gray-400"
-          } mt-3 mx-4`}
-        ></div>
-        <div
-          className={`rounded-full w-12 h-12 flex items-center justify-center text-white ${
-            currentStep >= 2 ? "bg-blue-600" : "bg-gray-400"
-          }`}
-        >
-          02
-        </div>
-        <div
-          className={`w-16 h-px bg-${
-            currentStep >= 3 ? "blue-600" : "gray-400"
-          } mt-3 mx-4`}
-        ></div>
-        <div
-          className={`rounded-full w-12 h-12 flex items-center justify-center text-white ${
-            currentStep >= 3 ? "bg-blue-600" : "bg-gray-400"
-          }`}
-        >
-          03
-        </div>
+        <div className={`rounded-full w-12 h-12 flex items-center justify-center text-white ${currentStep >= 1 ? 'bg-blue-600' : 'bg-gray-400'}`}>01</div>
+        <div className={`w-16 h-px bg-${currentStep >= 2 ? 'blue-600' : 'gray-400'} mt-3 mx-4`}></div>
+        <div className={`rounded-full w-12 h-12 flex items-center justify-center text-white ${currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-400'}`}>02</div>
+        <div className={`w-16 h-px bg-${currentStep >= 3 ? 'blue-600' : 'gray-400'} mt-3 mx-4`}></div>
+        <div className={`rounded-full w-12 h-12 flex items-center justify-center text-white ${currentStep >= 3 ? 'bg-blue-600' : 'bg-gray-400'}`}>03</div>
       </div>
 
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">
-          Affiliate Partner Registration
-        </h2>
-        <p className="text-gray-600">
-          Sellvia Business guarantees a starting income of $5,000 for active
-          affiliates who fulfill orders.
-        </p>
+        <h2 className="text-3xl font-bold mb-2">Affiliate Partner Registration</h2>
+        <p className="text-gray-600">Sellvia Business guarantees a starting income of $5,000 for active affiliates who fulfill orders.</p>
       </div>
 
       <div className="space-y-6">
-        {currentStep === 1 && (
-          <Step1 formData={formData} setFormData={setFormData} />
-        )}
-        {currentStep === 2 && (
-          <Step2 formData={formData} setFormData={setFormData} />
-        )}
-        {currentStep === 3 && (
-          <Step3 formData={formData} setFormData={setFormData} />
-        )}
+        {currentStep === 1 && <Step1 formData={formData} setFormData={setFormData} />}
+        {currentStep === 2 && <Step2 formData={formData} setFormData={setFormData} />}
+        {currentStep === 3 && <Step3 formData={formData} setFormData={setFormData} />}
       </div>
 
       <div className="mt-8">
@@ -351,10 +303,7 @@ const Register = () => {
             {loading ? "Processing..." : "Next"}
           </button>
         ) : (
-          <button
-            className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
-            onClick={() => alert("Account created!")}
-          >
+          <button className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition" onClick={() => alert("Account created!")}>
             Verify
           </button>
         )}
@@ -364,17 +313,22 @@ const Register = () => {
         {currentStep < 3 ? (
           <div>
             Have an account?{" "}
-            <a href="/sign-in" className="text-blue-600 hover:underline">
-              Sign In
-            </a>
+
+              <a className="text-blue-600 hover:underline">Sign In</a>
+
           </div>
         ) : (
           <div>
             Didn’t receive an email?{" "}
-            <a className="text-blue-600 hover:underline">Resend</a>
+
+              <a className="text-blue-600 hover:underline">Resend</a>
+
           </div>
         )}
       </div>
+
+      {errorMessage && <div className="text-center mt-4 text-red-600">{errorMessage}</div>}
+      {successMessage && <div className="text-center mt-4 text-green-600">{successMessage}</div>}
     </div>
   );
 };
